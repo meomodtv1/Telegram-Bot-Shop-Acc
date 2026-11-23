@@ -17,7 +17,7 @@ database_name = "telegram-shop-bot-db"
 database_id = ""d1_databases": [{
     "binding": "DB",
     "database_name": "telegram-shop-bot-db",
-    "database_id": "0eab4810-5aca-4f8d-b636-6cfd2ccedbd1"
+    "database_id": "da3e05a2-33f6-49e9-ba17-6cf1988c9f52"
  }]"
 migrations_dir = "migrations"
 
