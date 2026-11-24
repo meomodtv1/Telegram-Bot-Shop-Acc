@@ -1,3 +1,4 @@
+
 /**
  * Hono Bindings type — environment variables và D1 binding cho Cloudflare Worker.
  */
@@ -14,6 +15,8 @@ export type Bindings = {
   ADMIN_IDS: string
   /** Secret key cho JWT signing (CMS auth) */
   JWT_SECRET: string
+  /** Secret dùng để tạo tài khoản quản trị viên lần đầu */
+  ADMIN_SETUP_SECRET: string
   /** Tên ngân hàng nhận thanh toán */
   BANK_NAME: string
   /** Số tài khoản ngân hàng nhận thanh toán */
