@@ -1,6 +1,7 @@
+
 import { Hono } from 'hono'
 import { SignJWT } from 'jose'
-import { verifyPassword } from '../../utils/auth'
+import { hashPassword, verifyPassword } from '../../utils/auth'
 import { jwtAuth, type AdminVariables } from '../../middleware/jwt-auth'
 import type { Bindings } from '../../types'
 import type { DbAdminUser } from '../../types/db'
@@ -13,9 +14,106 @@ type AuthEnv = {
 const authRoutes = new Hono<AuthEnv>()
 
 /**
+ * POST /auth/register-first
+ * Chỉ tạo tài khoản quản trị viên đầu tiên.
+ * Yêu cầu ADMIN_SETUP_SECRET và chỉ hoạt động khi chưa có admin.
+ */
+authRoutes.post('/register-first', async (c) => {
+  const setupSecret = c.env.ADMIN_SETUP_SECRET
+  const suppliedSecret = c.req.header('X-Admin-Setup-Secret')
+
+  if (!setupSecret || !suppliedSecret || suppliedSecret !== setupSecret) {
+    return c.json(
+      { success: false, data: null, error: 'Unauthorized' },
+      401
+    )
+  }
+
+  let body: {
+    username?: string
+    password?: string
+    display_name?: string
+  }
+
+  try {
+    body = await c.req.json()
+  } catch {
+    return c.json(
+      { success: false, data: null, error: 'Invalid request body' },
+      400
+    )
+  }
+
+  const username = body.username?.trim()
+  const password = body.password
+  const displayName = body.display_name?.trim() || null
+
+  if (
+    !username ||
+    !/^[a-zA-Z0-9_-]{3,32}$/.test(username) ||
+    typeof password !== 'string' ||
+    password.length < 12 ||
+    password.length > 128
+  ) {
+    return c.json(
+      {
+        success: false,
+        data: null,
+        error: 'Username must be 3-32 characters and password must be 12-128 characters',
+      },
+      400
+    )
+  }
+
+  const existing = await c.env.DB.prepare(
+    'SELECT id FROM admin_users LIMIT 1'
+  ).first()
+
+  if (existing) {
+    return c.json(
+      {
+        success: false,
+        data: null,
+        error: 'An administrator account already exists',
+      },
+      409
+    )
+  }
+
+  const passwordHash = await hashPassword(password)
+
+  // Single conditional INSERT prevents a second initial account
+  // if two setup requests arrive at nearly the same time.
+  const result = await c.env.DB.prepare(`
+    INSERT INTO admin_users (username, password_hash, display_name)
+    SELECT ?, ?, ?
+    WHERE NOT EXISTS (SELECT 1 FROM admin_users)
+  `).bind(username, passwordHash, displayName).run()
+
+  if (!result.success || result.meta.changes !== 1) {
+    return c.json(
+      {
+        success: false,
+        data: null,
+        error: 'Account creation failed. An administrator may already exist.',
+      },
+      409
+    )
+  }
+
+  return c.json({
+    success: true,
+    data: {
+      username,
+      display_name: displayName,
+    },
+    error: null,
+  }, 201)
+})
+
+/**
  * POST /auth/login
  * Validate credentials, check lockout, create JWT (24h).
- * Requirements: 12.1, 12.2, 12.3, 12.8
  */
 authRoutes.post('/login', async (c) => {
   const body = await c.req.json<{ username?: string; password?: string }>()
@@ -29,7 +127,6 @@ authRoutes.post('/login', async (c) => {
 
   const { username, password } = body
 
-  // Find admin user by username
   const admin = await c.env.DB.prepare(
     'SELECT * FROM admin_users WHERE username = ?'
   ).bind(username).first<DbAdminUser>()
@@ -43,32 +140,34 @@ authRoutes.post('/login', async (c) => {
 
   const now = new Date()
 
-  // Check lockout: if locked_until is set and in the future → 403
   if (admin.locked_until) {
     const lockedUntil = new Date(admin.locked_until)
+
     if (now < lockedUntil) {
       return c.json(
         { success: false, data: null, error: 'Account locked. Try again later.' },
         403
       )
     }
-    // Lock period expired, reset lockout state
+
     await c.env.DB.prepare(
       'UPDATE admin_users SET locked_until = NULL, failed_login_count = 0 WHERE id = ?'
     ).bind(admin.id).run()
+
     admin.failed_login_count = 0
     admin.locked_until = null
   }
 
-  // Verify password
   const passwordValid = await verifyPassword(password, admin.password_hash)
 
   if (!passwordValid) {
     const newFailCount = admin.failed_login_count + 1
 
-    // If 5 or more failures → lock for 30 minutes
     if (newFailCount >= 5) {
-      const lockedUntil = new Date(now.getTime() + 30 * 60 * 1000).toISOString()
+      const lockedUntil = new Date(
+        now.getTime() + 30 * 60 * 1000
+      ).toISOString()
+
       await c.env.DB.prepare(
         'UPDATE admin_users SET failed_login_count = ?, locked_until = ? WHERE id = ?'
       ).bind(newFailCount, lockedUntil, admin.id).run()
@@ -89,15 +188,18 @@ authRoutes.post('/login', async (c) => {
     )
   }
 
-  // Success: reset failed_login_count, update last_login_at
   const nowIso = now.toISOString()
+
   await c.env.DB.prepare(
     'UPDATE admin_users SET failed_login_count = 0, locked_until = NULL, last_login_at = ? WHERE id = ?'
   ).bind(nowIso, admin.id).run()
 
-  // Create JWT (24h expiry)
   const secret = new TextEncoder().encode(c.env.JWT_SECRET)
-  const token = await new SignJWT({ sub: String(admin.id), username: admin.username })
+
+  const token = await new SignJWT({
+    sub: String(admin.id),
+    username: admin.username,
+  })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime('24h')
@@ -121,14 +223,17 @@ authRoutes.post('/login', async (c) => {
 /**
  * POST /auth/refresh
  * Requires valid JWT. Issues new JWT with fresh 24h expiry.
- * Requirements: 12.3, 12.5
  */
 authRoutes.post('/refresh', jwtAuth, async (c) => {
   const adminId = c.get('adminId')
   const adminUsername = c.get('adminUsername')
 
   const secret = new TextEncoder().encode(c.env.JWT_SECRET)
-  const token = await new SignJWT({ sub: String(adminId), username: adminUsername })
+
+  const token = await new SignJWT({
+    sub: String(adminId),
+    username: adminUsername,
+  })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime('24h')
@@ -144,14 +249,15 @@ authRoutes.post('/refresh', jwtAuth, async (c) => {
 /**
  * GET /auth/me
  * Requires valid JWT. Returns admin info.
- * Requirements: 12.4, 12.5
  */
 authRoutes.get('/me', jwtAuth, async (c) => {
   const adminId = c.get('adminId')
 
   const admin = await c.env.DB.prepare(
     'SELECT id, username, display_name, last_login_at FROM admin_users WHERE id = ?'
-  ).bind(adminId).first<Pick<DbAdminUser, 'id' | 'username' | 'display_name' | 'last_login_at'>>()
+  ).bind(adminId).first<
+    Pick<DbAdminUser, 'id' | 'username' | 'display_name' | 'last_login_at'>
+  >()
 
   if (!admin) {
     return c.json(
