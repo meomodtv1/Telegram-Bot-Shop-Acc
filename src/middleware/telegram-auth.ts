@@ -13,6 +13,14 @@ export const telegramAuth = createMiddleware<AppEnv>(async (c, next) => {
     headerPresent: Boolean(secretToken),
     expectedPresent: Boolean(expected),
     matched: Boolean(secretToken && expected && secretToken === expected),
+    headerLength: secretToken?.length ?? 0,
+    expectedLength: expected.length,
+    headerHasOuterWhitespace: secretToken !== secretToken?.trim(),
+    expectedHasOuterWhitespace: expected !== expected.trim(),
+    trimmedMatched: Boolean(
+      secretToken && expected &&
+      secretToken.trim() === expected.trim()
+    ),
   })
 
   if (!secretToken || !expected || secretToken !== expected) {
