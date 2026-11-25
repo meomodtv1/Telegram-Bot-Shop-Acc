@@ -44,7 +44,7 @@ async function loadConfig() {
       form.value.bank_account = c.bank_account ?? ''
       form.value.bank_owner = c.bank_owner ?? ''
       form.value.bot_token = c.bot_token ?? ''
-      form.value.telegram_secret_token = c.telegram_secret_token ?? ''
+      form.value.telegram_secret_token = ''
       form.value.sepay_api_key = c.sepay_api_key ?? ''
       form.value.min_deposit = c.min_deposit ?? '20000'
       form.value.max_deposit = c.max_deposit ?? '100000000'
