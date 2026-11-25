@@ -14,7 +14,7 @@ enabled = true
 [[d1_databases]]
 binding = "DB"
 database_name = "telegram-shop-bot-db"
-database_id = "9df05ad1-6854-49ff-9422-ded3e13c4dbf"
+database_id = "f4b6dea7-bc5d-4779-aa38-a46150ff9c1d"
 migrations_dir = "migrations"
 
 [triggers]
