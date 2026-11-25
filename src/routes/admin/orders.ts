@@ -139,4 +139,63 @@ orderRoutes.get('/:id', async (c) => {
   })
 })
 
+
+/**
+ * DELETE /orders/:id
+ * Permanently delete an order while preserving financial history and sold products.
+ * Order items are removed, but products remain sold and are detached from the deleted order.
+ */
+orderRoutes.delete('/:id', async (c) => {
+  const orderId = Number(c.req.param('id'))
+
+  if (!Number.isInteger(orderId) || orderId <= 0) {
+    return c.json({ success: false, data: null, error: 'Invalid order ID' }, 400)
+  }
+
+  const order = await c.env.DB.prepare(
+    'SELECT id, user_id, product_type_id, quantity, total_amount, transaction_id, status, created_at FROM orders WHERE id = ?'
+  ).bind(orderId).first<{
+    id: number
+    user_id: number
+    product_type_id: number
+    quantity: number
+    total_amount: number
+    transaction_id: number | null
+    status: string
+    created_at: string
+  }>()
+
+  if (!order) {
+    return c.json({ success: false, data: null, error: 'Order not found' }, 404)
+  }
+
+  const now = new Date().toISOString()
+  const adminId = c.get('adminId')
+
+  // Keep sold products and the financial transaction ledger intact.
+  // Remove dependent order_items and clear products.order_id before deleting the order.
+  await c.env.DB.batch([
+    c.env.DB.prepare('DELETE FROM order_items WHERE order_id = ?').bind(orderId),
+    c.env.DB.prepare('UPDATE products SET order_id = NULL WHERE order_id = ?').bind(orderId),
+    c.env.DB.prepare('DELETE FROM orders WHERE id = ?').bind(orderId),
+    c.env.DB.prepare(
+      `INSERT INTO audit_logs (admin_id, action, resource_type, resource_id, old_value, created_at)
+       VALUES (?, ?, ?, ?, ?, ?)`
+    ).bind(
+      adminId,
+      'delete',
+      'order',
+      orderId,
+      JSON.stringify(order),
+      now
+    ),
+  ])
+
+  return c.json({
+    success: true,
+    data: { id: orderId },
+    error: null,
+  })
+})
+
 export { orderRoutes }
