@@ -54,7 +54,7 @@ export async function handleDepositMenu(
   const text = [
     '💰 <b>NẠP TIỀN VNĐ</b>',
     '',
-    'Vui lòng gửi số tiền bạn muốn nạp (tối thiểu10,00đ):
+    'Vui lòng gửi số tiền bạn muốn nạp (tối thiểu10,00đ:):
 (Hoặc gõ /huy để hủy)ý:',
     '',
     `💡 Tối thiểu: <b>${formatCurrency(minAmount)}</b>`,
