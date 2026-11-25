@@ -39,6 +39,7 @@ const selectedOrder = ref<OrderDetail | null>(null)
 const showDetail = ref(false)
 const loading = ref(false)
 const detailLoading = ref(false)
+const deleteLoading = ref(false)
 
 // Pagination
 const page = ref(1)
@@ -101,6 +102,31 @@ async function viewDetail(orderId: number) {
     }
   } finally {
     detailLoading.value = false
+  }
+}
+
+
+async function deleteOrder() {
+  const orderId = selectedOrder.value?.id
+  if (!orderId) return
+
+  if (!confirm(`Bạn có chắc chắn muốn XÓA VĨNH VIỄN đơn hàng #${orderId}? Thao tác này không thể hoàn tác. Giao dịch tài chính và trạng thái sản phẩm đã bán vẫn được giữ lại.`)) {
+    return
+  }
+
+  deleteLoading.value = true
+  try {
+    const res = await api.delete<{ id: number }>(`/orders/${orderId}`)
+    if (res.success) {
+      closeDetail()
+      await loadOrders()
+    } else {
+      alert(res.error || 'Không thể xoá đơn hàng')
+    }
+  } catch {
+    alert('Lỗi kết nối server khi xoá đơn hàng')
+  } finally {
+    deleteLoading.value = false
   }
 }
 
@@ -396,7 +422,17 @@ onMounted(() => {
 
         <!-- Footer -->
         <div class="modal-foot">
-          <button class="btn btn-secondary" @click="closeDetail">Đóng</button>
+          <button
+            v-if="selectedOrder"
+            class="btn btn-ghost"
+            :style="{ color: 'var(--red-fg)' }"
+            :disabled="deleteLoading || detailLoading"
+            @click="deleteOrder"
+          >
+            <Icon name="trash" :size="16" />
+            {{ deleteLoading ? 'Đang xoá...' : 'Xóa vĩnh viễn' }}
+          </button>
+          <button class="btn btn-secondary" :disabled="deleteLoading" @click="closeDetail">Đóng</button>
         </div>
       </div>
     </div>
