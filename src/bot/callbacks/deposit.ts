@@ -52,12 +52,13 @@ export async function handleDepositMenu(
   const { min: minAmount } = await readDepositLimits(db)
 
   const text = [
-    '💰 <b>Nạp tiền</b>',
+    '💰 <b> NẠP TIỀN VNĐ</b>',
     '',
-    'Chọn mệnh giá hoặc nhập số tiền tùy ý:',
+    'Vui lòng gửi số tiền bạn muốn nạp (tối thiểu10,00đ):
+(Hoặc gõ /cancel để hủy)ý:',
     '',
     `💡 Tối thiểu: <b>${formatCurrency(minAmount)}</b>`,
-    '📝 Gõ /huy để huỷ giao dịch',
+    '📝 Gõ /cancel để huỷ giao dịch',
   ].join('\n')
 
   // Build grid 2×4 inline keyboard
