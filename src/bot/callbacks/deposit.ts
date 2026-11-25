@@ -22,11 +22,20 @@ import { checkDepositPolicy, depositPolicyMessage } from '../../services/deposit
 import { readDepositLimits } from '../../services/deposit-limits'
 import { resolveBankConfig } from '../../services/bank-config'
 
-/** Mệnh giá nạp nhanh (grid 2×3) */
-const PRESET_AMOUNTS = [30_000, 50_000, 100_000, 200_000, 500_000, 1_000_000]
+/** Mệnh giá nạp nhanh (grid 2×4) */
+const PRESET_AMOUNTS = [
+  10_000,
+  20_000,
+  30_000,
+  50_000,
+  100_000,
+  200_000,
+  500_000,
+  1_000_000,
+]
 
 /**
- * Hiển thị menu chọn mệnh giá nạp tiền (grid 2×3).
+ * Hiển thị menu chọn mệnh giá nạp tiền (grid 2×4).
  * Callback: `dep:menu`
  */
 export async function handleDepositMenu(
@@ -51,7 +60,7 @@ export async function handleDepositMenu(
     '📝 Gõ /huy để huỷ giao dịch',
   ].join('\n')
 
-  // Build grid 2×3 inline keyboard
+  // Build grid 2×4 inline keyboard
   const rows: { text: string; callback_data: string }[][] = []
   for (let i = 0; i < PRESET_AMOUNTS.length; i += 2) {
     const row = PRESET_AMOUNTS.slice(i, i + 2).map((amount) => ({
