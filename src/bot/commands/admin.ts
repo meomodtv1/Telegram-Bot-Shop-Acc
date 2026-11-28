@@ -612,6 +612,35 @@ export async function handleAddProduct(
 
       await db.batch(stmts)
 
+      // Notify active users that this category has new stock.
+      let notified = 0
+      let failed = 0
+      try {
+        const userRows = await db.prepare('SELECT telegram_id FROM users WHERE is_active = 1').all<{ telegram_id: number }>()
+        const notice = [
+          '📦 <b>SHOP • CẬP NHẬT HÀNG MỚI</b>',
+          '',
+          '✨ Shop vừa bổ sung sản phẩm mới!',
+          `🏷️ Danh mục: <b>${categoryName}</b>`,
+          `📦 Số lượng bổ sung: <b>${lines.length}</b>`,
+          '',
+          'Vào shop để xem hàng và đặt mua ngay.',
+        ].join('\\n')
+        const noticeKeyboard = buildInlineKeyboard([
+          [{ text: '🛍️ Xem sản phẩm', callback_data: 'cat:list' }],
+        ])
+        for (const row of userRows.results) {
+          try {
+            await sendMessage(botToken, row.telegram_id, notice, { parse_mode: 'HTML', reply_markup: noticeKeyboard })
+            notified++
+          } catch {
+            failed++
+          }
+        }
+      } catch {
+        // Keep product insertion successful if notification query fails.
+      }
+
       clearSession(userId)
 
       const keyboard = buildInlineKeyboard([
@@ -622,7 +651,7 @@ export async function handleAddProduct(
       await sendMessage(
         botToken,
         chatId,
-        `✅ <b>Đã thêm ${lines.length} sản phẩm</b> vào loại "${categoryName}".`,
+        `✅ <b>Đã thêm ${lines.length} sản phẩm</b> vào loại "${categoryName}".\n\n📣 Đã gửi thông báo: ${notified} user (lỗi ${failed}).`,
         { parse_mode: 'HTML', reply_markup: keyboard }
       )
       break
