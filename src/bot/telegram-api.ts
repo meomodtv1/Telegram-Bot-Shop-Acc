@@ -180,6 +180,7 @@ export function buildMainMenu(): ReplyKeyboardMarkup {
     keyboard: [
       [{ text: '🛒 Mua hàng' }, { text: '💰 Nạp tiền' }],
       [{ text: '📜 Lịch sử' }, { text: '👤 Số dư' }],
+      [{ text: '📞 Liên hệ Admin' }],
     ],
     resize_keyboard: true,
     is_persistent: true,
