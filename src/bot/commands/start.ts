@@ -91,6 +91,7 @@ export async function handleStart(
         [
           { text: '📜 Lịch sử', callback_data: 'hist' },
           { text: '👤 Số dư', callback_data: 'acc' },
+          { text: '📞 Liên hệ Admin', callback_data: 'contact' },
         ],
       ]),
     })
