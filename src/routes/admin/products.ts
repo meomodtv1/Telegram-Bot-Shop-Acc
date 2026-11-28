@@ -45,12 +45,13 @@ productRoutes.get('/', async (c) => {
     params.push(status)
   }
 
-  const whereClause =
-  conditions.length > 0
-    ? `WHERE ${conditions.join(' AND ')}`
-    : ''
+  let whereClause = ''
 
-  const countSql = `SELECT COUNT(*) as total FROM products p ${whereClause}`
+if (conditions.length > 0) {
+  whereClause = 'WHERE ' + conditions.join(' AND ')
+}
+
+const countSql = `SELECT COUNT(*) as total FROM products p ${whereClause}`
   const countResult = await c.env.DB.prepare(countSql)
     .bind(...params)
     .first<{ total: number }>()
