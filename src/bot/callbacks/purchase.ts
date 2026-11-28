@@ -69,10 +69,13 @@ export async function handleCategoryList(
       botToken,
       chatId,
       messageId,
-      '🛍️ <b>SHOP • MUA HÀNG</b>\n\n━━━━━━━━━━━━━━━━━━\n📦 <b>Hiện chưa có sản phẩm sẵn sàng</b>\n\nKho hàng đang được cập nhật. Bạn vui lòng quay lại sau hoặc liên hệ Admin nếu cần hỗ trợ.\n\n✨ Cảm ơn bạn đã quan tâm đến shop!',
+      '🛍️ <b>SHOP • MUA HÀNG</b>\n\n━━━━━━━━━━━━━━━━━━\n📦 <b>Kho hàng hiện đang cập nhật</b>\n\nHiện chưa có sản phẩm sẵn sàng để giao. Shop đang bổ sung hàng và sẽ cập nhật danh mục sớm nhất.\n\n💬 Nếu cần hỗ trợ hoặc hỏi thêm thông tin, vui lòng liên hệ Admin.\n\n━━━━━━━━━━━━━━━━━━\n✨ Cảm ơn quý khách đã quan tâm và ủng hộ shop!',
       {
         parse_mode: 'HTML',
-        reply_markup: buildInlineKeyboard([buildBackButton('menu:main')]),
+        reply_markup: buildInlineKeyboard([
+          [{ text: '💬 Liên hệ Admin', url: 'https://t.me/meomodvn1' }],
+          buildBackButton('menu:main'),
+        ]),
       }
     )
     return
