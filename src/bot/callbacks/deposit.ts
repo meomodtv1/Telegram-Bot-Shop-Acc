@@ -52,12 +52,21 @@ export async function handleDepositMenu(
   const { min: minAmount } = await readDepositLimits(db)
 
   const text = [
-    '💰 <b>Nạp tiền</b>',
+    '💳 <b>NẠP TIỀN • TÀI KHOẢN</b>',
     '',
-    'Chọn mệnh giá hoặc nhập số tiền tùy ý:',
+    'Bổ sung số dư nhanh chóng và thuận tiện.',
+    'Vui lòng chọn mức nạp bên dưới hoặc nhập số tiền mong muốn.',
     '',
-    `💡 Tối thiểu: <b>${formatCurrency(minAmount)}</b>`,
-    '📝 Gõ /huy để huỷ giao dịch',
+    '━━━━━━━━━━━━━━━━━━',
+    `🔹 Số tiền tối thiểu: <b>${formatCurrency(minAmount)}</b>`,
+    '🔹 Giao dịch được xử lý tự động khi thanh toán hợp lệ.',
+    '🔹 Nội dung chuyển khoản cần giữ nguyên theo hướng dẫn QR.',
+    '━━━━━━━━━━━━━━━━━━',
+    '',
+    '👇 <b>CHỌN MỨC NẠP</b>',
+    '✏️ Hoặc nhập số tiền trực tiếp vào khung chat.',
+    '',
+    '❌ Gõ /huy để hủy giao dịch.',
   ].join('\n')
 
   // Build grid 2×4 inline keyboard
@@ -70,7 +79,7 @@ export async function handleDepositMenu(
     rows.push(row)
   }
   // Nút huỷ
-  rows.push([{ text: '❌ Huỷ', callback_data: 'dep:cancel' }])
+  rows.push([{ text: '✖️ Hủy giao dịch', callback_data: 'dep:cancel' }])
 
   const res = await editOrSendMessage(botToken, chatId, messageId, text, {
     parse_mode: 'HTML',
