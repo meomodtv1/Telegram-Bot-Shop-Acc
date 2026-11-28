@@ -68,10 +68,21 @@ export async function handleStart(
     const welcomeText = [
       `🏪 <b>${shopName}</b>`,
       '',
-      `Xin chào <b>${displayName}</b>! 👋`,
-      `💰 Số dư: <b>${formatCurrency(balance)}</b>`,
-      // '',
-      // '📌 Chọn chức năng bên dưới để bắt đầu:',
+      `👋 Xin chào <b>${displayName}</b>, chào mừng bạn đến với cửa hàng!`,
+      '',
+      '✨ Hệ thống mua tài khoản tự động, nhanh chóng và tiện lợi.',
+      '',
+      `💰 Số dư của bạn: <b>${formatCurrency(balance)}</b>`,
+      '',
+      '⚡ <b>DỊCH VỤ TIỆN ÍCH</b>',
+      '🛒 Mua tài khoản tự động',
+      '💳 Nạp tiền nhanh chóng',
+      '📜 Theo dõi lịch sử đơn hàng',
+      '👤 Kiểm tra số dư',
+      '📞 Hỗ trợ từ Admin',
+      '',
+      '🔐 Các giao dịch được ghi nhận trên hệ thống.',
+      '❤️ Cảm ơn bạn đã tin tưởng và ủng hộ shop!',
     ].join('\n')
 
     // 1. Welcome + reply keyboard sticky (4 nút dưới khung chat)
