@@ -631,8 +631,9 @@ export async function handleAddProduct(
         ])
         for (const row of userRows.results) {
           try {
-            await sendMessage(botToken, row.telegram_id, notice, { parse_mode: 'HTML', reply_markup: noticeKeyboard })
-            notified++
+            const result = await sendMessage(botToken, row.telegram_id, notice, { parse_mode: 'HTML', reply_markup: noticeKeyboard })
+            if (result.ok) notified++
+            else failed++
           } catch {
             failed++
           }
