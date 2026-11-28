@@ -69,7 +69,7 @@ export async function handleCategoryList(
       botToken,
       chatId,
       messageId,
-      '📦 Hiện tại không có sản phẩm nào khả dụng.\n\nVui lòng quay lại sau!',
+      '🛍️ <b>SHOP • MUA HÀNG</b>\n\n━━━━━━━━━━━━━━━━━━\n📦 <b>Hiện chưa có sản phẩm sẵn sàng</b>\n\nKho hàng đang được cập nhật. Bạn vui lòng quay lại sau hoặc liên hệ Admin nếu cần hỗ trợ.\n\n✨ Cảm ơn bạn đã quan tâm đến shop!',
       {
         parse_mode: 'HTML',
         reply_markup: buildInlineKeyboard([buildBackButton('menu:main')]),
