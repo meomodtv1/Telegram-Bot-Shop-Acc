@@ -194,6 +194,7 @@ export async function handleCallbackQuery(
             [
               { text: '📜 Lịch sử', callback_data: 'hist' },
               { text: '👤 Số dư', callback_data: 'acc' },
+              { text: '📞 Liên hệ Admin', callback_data: 'contact' },
             ],
           ]),
         })
@@ -209,6 +210,13 @@ export async function handleCallbackQuery(
 
       case 'acc':
         await handleAccount(db, botToken, chatId, messageId, userId)
+        break
+
+      case 'contact':
+        await sendMessage(botToken, chatId, '📞 <b>Liên hệ Admin</b>\\n\\nBạn có thể nhắn trực tiếp cho Admin tại @meomodvn1.', {
+          parse_mode: 'HTML',
+          reply_markup: buildInlineKeyboard([[{ text: '💬 Nhắn Admin', url: 'https://t.me/meomodvn1' }]]),
+        })
         break
 
       default:
@@ -272,6 +280,13 @@ export async function handleTextMessage(
 
       case '👤 Số dư':
         await handleAccount(db, botToken, chatId, undefined, userId)
+        return
+
+      case '📞 Liên hệ Admin':
+        await sendMessage(botToken, chatId, '📞 <b>Liên hệ Admin</b>\\n\\nBạn có thể nhắn trực tiếp cho Admin tại @meomodvn1.', {
+          parse_mode: 'HTML',
+          reply_markup: buildInlineKeyboard([[{ text: '💬 Nhắn Admin', url: 'https://t.me/meomodvn1' }]]),
+        })
         return
     }
 
