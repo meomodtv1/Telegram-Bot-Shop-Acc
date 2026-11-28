@@ -32,7 +32,7 @@ productRoutes.get('/', async (c) => {
   const allowedSorts = ['id', 'created_at', 'sold_at', 'status', 'type_id']
   const safeSort = allowedSorts.includes(sort) ? sort : 'created_at'
 
-  const conditions: string[] = []
+      const conditions: string[] = []
   const params: (string | number)[] = []
 
   if (typeId) {
@@ -47,11 +47,11 @@ productRoutes.get('/', async (c) => {
 
   let whereClause = ''
 
-if (conditions.length > 0) {
-  whereClause = 'WHERE ' + conditions.join(' AND ')
-}
+  if (conditions.length > 0) {
+    whereClause = 'WHERE ' + conditions.join(' AND ')
+  }
 
-const countSql = `SELECT COUNT(*) as total FROM products p ${whereClause}`
+  const countSql = `SELECT COUNT(*) as total FROM products p ${whereClause}`
   const countResult = await c.env.DB.prepare(countSql)
     .bind(...params)
     .first<{ total: number }>()
