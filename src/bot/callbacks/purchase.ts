@@ -86,7 +86,7 @@ export async function handleCategoryList(
   // Build category buttons (1 per row)
   const buttons: InlineKeyboardButton[][] = pageItems.map((cat) => [
     {
-      text: `${cat.emoji} ${cat.name} — ${formatCurrency(cat.price)} (còn ${cat.stock})`,
+      text: `${cat.emoji} ${cat.name} • ${formatCurrency(cat.price)} • còn ${cat.stock}`,
       callback_data: `cat:${cat.id}`,
     },
   ])
@@ -107,9 +107,20 @@ export async function handleCategoryList(
   buttons.push(buildBackButton('menu:main'))
 
   const text = [
-    '🛒 <b>Mua tài khoản</b>',
+    '🛍️ <b>SHOP • DANH MỤC SẢN PHẨM</b>',
     '',
-    `📋 Danh sách sản phẩm (trang ${safePage + 1}/${totalPages}):`,
+    'Chào mừng bạn đến khu vực mua hàng.',
+    'Vui lòng chọn danh mục để xem sản phẩm hiện có.',
+    '',
+    '━━━━━━━━━━━━━━━━━━',
+    '💰 Giá được tính cho mỗi tài khoản',
+    '📦 Số lượng tồn kho hiển thị trực tiếp',
+    '🔒 Thanh toán bằng số dư shop',
+    '━━━━━━━━━━━━━━━━━━',
+    '',
+    `📄 Trang ${safePage + 1}/${totalPages} • ${categories.length} danh mục`,
+    '',
+    '👇 <b>CHỌN DANH MỤC</b>',
   ].join('\n')
 
   await editOrSendMessage(botToken, chatId, messageId, text, {
