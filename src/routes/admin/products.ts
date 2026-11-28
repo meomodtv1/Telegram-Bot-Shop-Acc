@@ -45,7 +45,8 @@ productRoutes.get('/', async (c) => {
     params.push(status)
   }
 
-  const whereClause = conditions.length > 0
+  const whereClause =
+  conditions.length > 0
     ? `WHERE ${conditions.join(' AND ')}`
     : ''
 
